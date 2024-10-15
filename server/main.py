@@ -16,15 +16,37 @@ app.add_middleware(
 
 # Pocketbase URL and admin credentials
 POCKETBASE_URL = "http://127.0.0.1:8090"
-COLLECTION_NAME = "source"
+SOURCE_COLLECTION = "source"
+PERSONA_COLLECTION = "persona"
 
 # Define a Pydantic model for the sticky note
 class StickyNote(BaseModel):
     content: str
 
+class Persona(BaseModel):
+    content: str
+
 # Helper function to add a sticky note to Pocketbase
 def add_sticky_to_pocketbase(content: str):
-    url = f"{POCKETBASE_URL}/api/collections/{COLLECTION_NAME}/records"
+    url = f"{POCKETBASE_URL}/api/collections/{SOURCE_COLLECTION}/records"
+    headers = {"Content-Type": "application/json"}
+    
+    # Construct the data payload
+    data = {
+        "content": content
+    }
+
+    # Send POST request to Pocketbase
+    response = requests.post(url, json=data, headers=headers)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+    
+    return response.json()
+
+# Helper function to add a sticky note to Pocketbase
+def add_persona_to_pocketbase(content: str):
+    url = f"{POCKETBASE_URL}/api/collections/{PERSONA_COLLECTION}/records"
     headers = {"Content-Type": "application/json"}
     
     # Construct the data payload
@@ -49,12 +71,20 @@ async def create_sticky(sticky: StickyNote):
     except HTTPException as e:
         return {"error": str(e)}
     
+@app.post("/persona/")
+async def post_persona(persona: Persona):
+    try:
+        result = add_persona_to_pocketbase(persona.content)
+        return {"message": "Persona data added successfully", "data": result}
+    except HTTPException as e:
+        return {"error": str(e)}
+    
 # Endpoint to retrieve all stickies
 @app.get("/stickies/")
 async def get_all_stickies():
     try:
         # Make a GET request to the Pocketbase API to fetch all records in the "stickies" collection
-        response = requests.get(f"{POCKETBASE_URL}/api/collections/{COLLECTION_NAME}/records")
+        response = requests.get(f"{POCKETBASE_URL}/api/collections/{SOURCE_COLLECTION}/records")
         response.raise_for_status()  # Raise an exception for HTTP errors
     
         # Parse and return the response JSON

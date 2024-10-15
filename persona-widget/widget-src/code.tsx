@@ -24,6 +24,32 @@ function Persona() {
     }
   }
 
+  async function pushPersonaData() {
+    for (const data in personaData) {
+      await pushOnePersona(data)
+    }
+  }
+
+  async function pushOnePersona(text: string) {
+    try {
+      const response = await fetch("http://localhost:8000/persona/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: text }),
+      });
+  
+      if (response.ok) {
+        console.log("Persona data added successfully!");
+      } else {
+        console.error("Failed to add persona data:", response.statusText);
+      }
+    } catch (e) {
+      console.log("error: ", )
+    }
+  }
+
   return (
     <AutoLayout
       direction="horizontal"
@@ -45,7 +71,7 @@ function Persona() {
         <Face />
         <AutoLayout
           width={200}
-          height={100}
+          height={50}
           fill="#007AFF"
           cornerRadius={8}
           onClick={fetchPersonaData}  // Fetch data when rectangle is clicked
@@ -53,6 +79,17 @@ function Persona() {
           verticalAlignItems="center"
         >
           <Text fill="#FFFFFF" fontSize={16}>Fetch Data</Text>
+        </AutoLayout>
+        <AutoLayout
+          width={200}
+          height={50}
+          fill="#007AFF"
+          cornerRadius={8}
+          onClick={pushPersonaData}  // Fetch data when rectangle is clicked
+          horizontalAlignItems="center"
+          verticalAlignItems="center"
+        >
+          <Text fill="#FFFFFF" fontSize={16}>Push Data</Text>
         </AutoLayout>
       </AutoLayout>
 
