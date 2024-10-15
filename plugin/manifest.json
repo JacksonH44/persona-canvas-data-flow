@@ -1,5 +1,5 @@
 {
-  "name": "source-data",
+  "name": "sticky-plugin",
   "id": "1427748114409263096",
   "api": "1.0.0",
   "main": "code.js",
@@ -15,7 +15,6 @@
     "allowedDomains": [
       "none"
     ],
-    "reasoning": "Running server is located there",
     "devAllowedDomains": [
       "http://localhost:8000"
     ]

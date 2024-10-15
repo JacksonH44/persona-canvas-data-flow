@@ -24,7 +24,7 @@ async function postStickyNoteText(text: string) {
       console.error("Failed to add sticky note:", response.statusText);
     }
   } catch (e) {
-    console.log("error: ", e)
+    console.log("error: ", )
   }
 }
 

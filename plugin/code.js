@@ -36,7 +36,7 @@ function postStickyNoteText(text) {
             }
         }
         catch (e) {
-            console.log("error: ", e);
+            console.log("error: ");
         }
     });
 }

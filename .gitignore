@@ -3,6 +3,10 @@ server/__pycache__/
 server/*.pyc
 server/.venv
 plugin/node_modules/
-plugin/dist/
+plugin/dist
+plugin/package-lock.json
+persona-widget/package-lock.json
+persona-widget/node_modules
+persona-widget/dist
 .DS_Store
 pb_data
