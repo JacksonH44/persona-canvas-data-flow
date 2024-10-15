@@ -1,0 +1,8 @@
+# .gitignore
+server/__pycache__/
+server/*.pyc
+server/.venv
+plugin/node_modules/
+plugin/dist/
+.DS_Store
+pb_data
