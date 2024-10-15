@@ -48,8 +48,23 @@ async def create_sticky(sticky: StickyNote):
         return {"message": "Sticky note added successfully", "data": result}
     except HTTPException as e:
         return {"error": str(e)}
+    
+# Endpoint to retrieve all stickies
+@app.get("/stickies/")
+async def get_all_stickies():
+    try:
+        # Make a GET request to the Pocketbase API to fetch all records in the "stickies" collection
+        response = requests.get(f"{POCKETBASE_URL}/api/collections/{COLLECTION_NAME}/records")
+        response.raise_for_status()  # Raise an exception for HTTP errors
+    
+        # Parse and return the response JSON
+        return response.json()
+    
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
 
-# Example root route
+
+# Root route
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Sticky Note API"}
