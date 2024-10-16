@@ -85,9 +85,20 @@ async def get_all_stickies():
     try:
         # Make a GET request to the Pocketbase API to fetch all records in the "stickies" collection
         response = requests.get(f"{POCKETBASE_URL}/api/collections/{SOURCE_COLLECTION}/records")
-        response.raise_for_status()  # Raise an exception for HTTP errors
+        response.raise_for_status()
     
-        # Parse and return the response JSON
+        return response.json()
+    
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
+    
+@app.get("/personas/")
+async def get_all_personas():
+    try:
+        # Make a GET request to the Pocketbase API to fetch all records in the "persona" collection
+        response = requests.get(f"{POCKETBASE_URL}/api/collections/{SOURCE_COLLECTION}/records")
+        response.raise_for_status()
+    
         return response.json()
     
     except requests.exceptions.RequestException as e:

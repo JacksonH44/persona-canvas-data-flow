@@ -8,5 +8,8 @@ plugin/package-lock.json
 persona-widget/package-lock.json
 persona-widget/node_modules
 persona-widget/dist
+user-story-widget/package-lock.json
+user-story-widget/node_modules
+user-story-widget/dist
 .DS_Store
 pb_data
