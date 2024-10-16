@@ -79,6 +79,31 @@ async def post_persona(persona: Persona):
     except HTTPException as e:
         return {"error": str(e)}
     
+
+@app.patch("/persona/{id}")
+def update_persona(id: str, content: dict):
+    try:
+        # Construct the URL for the specific document in the Pocketbase collection
+        url = f"{POCKETBASE_URL}/api/collections/{PERSONA_COLLECTION}/records/{id}"
+        
+        # Prepare the data to update
+        update_data = {
+            "content": content.get("content")
+        }
+
+        # Make a PATCH request to the Pocketbase API
+        response = requests.patch(url, json=update_data)
+
+        # Check if the request was successful
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json())
+
+        # Return a success message with the updated data
+        return {"message": "Persona updated successfully", "data": response.json()}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 # Endpoint to retrieve all stickies
 @app.get("/stickies/")
 async def get_all_stickies():

@@ -33,7 +33,7 @@ function Persona() {
     for (const data of personaData) {
       await pushOnePersona(data)
     }
-    console.log('Personas: ', personaData)
+    setPersonaData(personaData)
   }
 
   async function pushOnePersona(persona: Persona) {
@@ -61,13 +61,13 @@ function Persona() {
 
   async function updatePersonaData() {
     try {
-      for (let i = 0; i < personaData.length; i++) {
-        const response = await fetch(`http://localhost:8000/persona/${i}`, {
+      for (const persona of personaData) {
+        const response = await fetch(`http://localhost:8000/persona/${persona.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ content: personaData[i] }),
+          body: JSON.stringify({ content: `CHANGED: ${persona.content}` }),
         });
     
         if (response.ok) {
