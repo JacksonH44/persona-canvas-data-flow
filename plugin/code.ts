@@ -1,9 +1,9 @@
-figma.showUI(__html__);
+// figma.showUI(__html__);
 
 // Function to gather all sticky notes
 async function getAllStickyNotes() {
-  await figma.loadAllPagesAsync();
-  const stickyNotes = figma.root.findAll((node) => node.type === "STICKY");
+  const selectedNodes = figma.currentPage.selection;
+  const stickyNotes = selectedNodes.filter((node) => node.type === "STICKY");
   return stickyNotes as StickyNode[];
 }
 
