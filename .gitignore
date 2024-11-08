@@ -2,6 +2,7 @@
 server/__pycache__/
 server/*.pyc
 server/.venv
+server/.env
 plugin/node_modules/
 plugin/dist
 plugin/package-lock.json

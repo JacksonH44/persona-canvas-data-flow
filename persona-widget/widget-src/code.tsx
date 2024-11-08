@@ -27,31 +27,39 @@ interface PersonaData {
 }
 
 function Persona() {
-  // const [personaData, setPersonaData] = useSyncedState<Persona[]>("data", []);
   const [widgetSize, setWidgetSize] = useSyncedState<string>("size", "L");
 
   const [personaData, setPersonaData] = useSyncedState<PersonaData>("personaData", {
-    type: "secondary",
-    name: "Alex",
-    age: "20-25",
-    location: "Europe or Americas with high French proficiency",
-    occupation: "Student or professional athlete",
-    status: "single",
-    education: "High school or college",
-    motivations: "I want to communicate effectively with French-speaking teammates...",
-    goals: "I aim to reach an A2 level in French within the next 6 months...",
-    frustrations: "I feel frustrated when I have to rely on memorization of phrases...",
-    story: "As a sports enthusiast, I have the opportunity to travel and compete internationally..."
+    type: "",
+    name: "",
+    age: "",
+    location: "",
+    occupation: "",
+    status: "",
+    education: "",
+    motivations: "",
+    goals: "",
+    frustrations: "",
+    story: ""
   });
 
   async function fetchPersonaData() {
     try {
-      const response = await fetch("http://localhost:8000/stickies/")
+      const response = await fetch("http://localhost:8000/personas/")
       const data = await response.json();
-      const contents = data.items.map((s: Sticky) => {
-        return { id: "", content: s.content }
+      setPersonaData({
+        type: data.type,
+        name: data.name,
+        age: data.age,
+        location: data.location,
+        occupation: data.occupation,
+        status: data.status,
+        education: data.education,
+        motivations: data.motivations,
+        goals: data.goals,
+        frustrations: data.frustrations,
+        story: data.story
       })
-      setPersonaData(contents)
     } catch (error) {
       console.error("Error fetching personas:", error)
     }
@@ -174,7 +182,7 @@ function Persona() {
 
         {/* "Button" to Update Data */}
         <AutoLayout
-          onClick={() => console.log("clicked")}
+          onClick={fetchPersonaData}
           padding={{ vertical: 10, horizontal: 20 }}
           fill="#42A5F5"
           cornerRadius={8}

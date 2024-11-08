@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
 
+from llm import create_persona
+
 app = FastAPI()
 
 # Configure CORS to allow access from all origins, methods, and headers
@@ -24,7 +26,17 @@ class StickyNote(BaseModel):
     content: str
 
 class Persona(BaseModel):
-    content: str
+    type: str
+    name: str
+    age: str
+    location: str
+    occupation: str
+    status: str
+    education: str
+    motivations: str
+    goals: str
+    frustrations: str
+    story: str
 
 # Helper function to add a sticky note to Pocketbase
 def add_sticky_to_pocketbase(content: str):
@@ -123,9 +135,15 @@ async def get_all_personas():
         # Make a GET request to the Pocketbase API to fetch all records in the "persona" collection
         response = requests.get(f"{POCKETBASE_URL}/api/collections/{SOURCE_COLLECTION}/records")
         response.raise_for_status()
-    
-        return response.json()
-    
+
+        data = response.json()
+        contents = [item['content'] for item in data.get('items', [])]
+        content_string = " NOTE: ".join(contents)
+
+        persona = create_persona(content_string)
+
+        return persona
+        
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
 
