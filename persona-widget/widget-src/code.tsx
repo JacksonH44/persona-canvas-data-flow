@@ -1,5 +1,5 @@
 const { widget } = figma;
-const { AutoLayout, useSyncedState, Text, Input } = widget;
+const { AutoLayout, useSyncedState, Text, Input, Rectangle } = widget;
 
 import { Face } from "./face";
 
@@ -12,9 +12,37 @@ interface Persona {
   content: string;
 }
 
+interface PersonaData {
+  type: string;
+  name: string;
+  age: string;
+  location: string;
+  occupation: string;
+  status: string;
+  education: string;
+  motivations: string;
+  goals: string;
+  frustrations: string;
+  story: string;
+}
+
 function Persona() {
-  const [personaData, setPersonaData] = useSyncedState<Persona[]>("data", []);
+  // const [personaData, setPersonaData] = useSyncedState<Persona[]>("data", []);
   const [widgetSize, setWidgetSize] = useSyncedState<string>("size", "L");
+
+  const [personaData, setPersonaData] = useSyncedState<PersonaData>("personaData", {
+    type: "secondary",
+    name: "Alex",
+    age: "20-25",
+    location: "Europe or Americas with high French proficiency",
+    occupation: "Student or professional athlete",
+    status: "single",
+    education: "High school or college",
+    motivations: "I want to communicate effectively with French-speaking teammates...",
+    goals: "I aim to reach an A2 level in French within the next 6 months...",
+    frustrations: "I feel frustrated when I have to rely on memorization of phrases...",
+    story: "As a sports enthusiast, I have the opportunity to travel and compete internationally..."
+  });
 
   async function fetchPersonaData() {
     try {
@@ -29,12 +57,12 @@ function Persona() {
     }
   }
 
-  async function pushPersonaData() {
-    for (const data of personaData) {
-      await pushOnePersona(data)
-    }
-    setPersonaData(personaData)
-  }
+  // async function pushPersonaData() {
+  //   for (const data of personaData) {
+  //     await pushOnePersona(data)
+  //   }
+  //   setPersonaData(personaData)
+  // }
 
   async function pushOnePersona(persona: Persona) {
     try {
@@ -59,133 +87,103 @@ function Persona() {
     }
   }
 
-  async function updatePersonaData() {
-    try {
-      for (const persona of personaData) {
-        const response = await fetch(`http://localhost:8000/persona/${persona.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ content: `CHANGED: ${persona.content}` }),
-        });
+  // async function updatePersonaData() {
+  //   try {
+  //     for (const persona of personaData) {
+  //       const response = await fetch(`http://localhost:8000/persona/${persona.id}`, {
+  //         method: "PATCH",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ content: `CHANGED: ${persona.content}` }),
+  //       });
     
-        if (response.ok) {
-          console.log("Persona data updated successfully!");
-        } else {
-          console.error("Failed to update persona data:", response.statusText);
-        }
-      }
-    } catch (error) {
-      console.error("Error updating persona data:", error);
-    }
-  }
+  //       if (response.ok) {
+  //         console.log("Persona data updated successfully!");
+  //       } else {
+  //         console.error("Failed to update persona data:", response.statusText);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating persona data:", error);
+  //   }
+  // }
 
   // Determine how many items to show
-  const itemsToShow = widgetSize == "S" ? personaData.slice(0, 3) : personaData;
+  // const itemsToShow = widgetSize == "S" ? personaData.slice(0, 3) : personaData;
 
   return (
     <AutoLayout
-      direction={widgetSize == "S" ? "vertical" : "horizontal"}
-      horizontalAlignItems="center"
-      verticalAlignItems="center"
-      height="hug-contents"
-      padding={8}
-      fill="#FFFFFF"
-      cornerRadius={8}
-      spacing={12}
+      direction="horizontal"
+      padding={16}
+      spacing={16}
+      fill="#F8F9FA"
+      cornerRadius={16}
+      stroke="#AB47BC"
+      strokeWidth={2}
+      width={600}
     >
-      {/* Left side */}
-      <AutoLayout
-        direction="vertical" 
-        horizontalAlignItems="center" 
-        verticalAlignItems="center" 
-        spacing={8} 
-      >
-        <Face />
-        <AutoLayout
-          width={200}
-          height={50}
-          fill="#007AFF"
-          cornerRadius={8}
-          onClick={fetchPersonaData}  // Fetch data when rectangle is clicked
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-        >
-          <Text fill="#FFFFFF" fontSize={16}>Fetch Data</Text>
-        </AutoLayout>
-        <AutoLayout
-          width={200}
-          height={50}
-          fill="#007AFF"
-          cornerRadius={8}
-          onClick={pushPersonaData}  // Fetch data when rectangle is clicked
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-        >
-          <Text fill="#FFFFFF" fontSize={16}>Push Data</Text>
-        </AutoLayout>
-        <AutoLayout
-          width={200}
-          height={50}
-          fill="#007AFF"
-          cornerRadius={8}
-          onClick={updatePersonaData}  // Fetch data when rectangle is clicked
-          horizontalAlignItems="center"
-          verticalAlignItems="center"
-        >
-          <Text fill="#FFFFFF" fontSize={16}>Update Data</Text>
+      {/* Left Section: Avatar and Basic Details */}
+      <AutoLayout direction="vertical" spacing={12} width={200}>
+        {/* Header with Avatar */}
+        <AutoLayout direction="horizontal" spacing={16} verticalAlignItems="center">
+          <Face></Face>
+          <Text fontSize={20} fontWeight="bold">Persona</Text>
         </AutoLayout>
 
-        <AutoLayout direction="horizontal" spacing={4}>
-          <AutoLayout
-            width={50}
-            height={30}
-            fill={widgetSize === "L" ? "#007AFF" : "#CCCCCC"}
-            cornerRadius={4}
-            onClick={() => setWidgetSize("L")}
-            horizontalAlignItems="center"
-            verticalAlignItems="center"
-          >
-            <Text fill="#FFFFFF" fontSize={12}>L</Text>
-          </AutoLayout>
-          <AutoLayout
-            width={50}
-            height={30}
-            fill={widgetSize === "S" ? "#007AFF" : "#CCCCCC"}
-            cornerRadius={4}
-            onClick={() => setWidgetSize("S")}
-            horizontalAlignItems="center"
-            verticalAlignItems="center"
-          >
-            <Text fill="#FFFFFF" fontSize={12}>S</Text>
-          </AutoLayout>
+        {/* Basic Details */}
+        <AutoLayout direction="vertical" spacing={4} padding={{ top: 12, bottom: 12 }}>
+          <Text fontWeight="bold">Type</Text>
+          <Text>{personaData.type}</Text>
+          <Text fontWeight="bold">Name</Text>
+          <Text>{personaData.name}</Text>
+          <Text fontWeight="bold">Age</Text>
+          <Text>{personaData.age}</Text>
+          <Text fontWeight="bold">Location</Text>
+          <Text>{personaData.location}</Text>
+          <Text fontWeight="bold">Occupation</Text>
+          <Text>{personaData.occupation}</Text>
+          <Text fontWeight="bold">Status (Married or Single)</Text>
+          <Text>{personaData.status}</Text>
+          <Text fontWeight="bold">Education</Text>
+          <Text>{personaData.education}</Text>
         </AutoLayout>
       </AutoLayout>
 
-      {/* Right side */}
-      <AutoLayout
-        direction="vertical" 
-        horizontalAlignItems="start" 
-        verticalAlignItems="start" 
-        spacing={4} 
-      >
-        {itemsToShow.map((persona: Persona, index) => {
-          return (
-            <Input 
-              key={index}
-              value={persona.content}
-              fill="#000000"
-              fontSize={16}
-              width={300}
-              onTextEditEnd={(text) => {
-                const updatedData = [...personaData];
-                updatedData[index].content = text.characters;
-                setPersonaData(updatedData);
-              }}
-            />
-          )
-        })}
+      {/* Right Section: Motivations, Goals, Frustrations, and Story */}
+      <AutoLayout direction="vertical" spacing={12} width="fill-parent">
+        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+          <Text fontWeight="bold">Motivations</Text>
+          <Text width="fill-parent">{personaData.motivations}</Text>
+        </AutoLayout>
+
+        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+          <Text fontWeight="bold">Goals</Text>
+          <Text width="fill-parent">{personaData.goals}</Text>
+        </AutoLayout>
+
+        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+          <Text fontWeight="bold">Frustrations</Text>
+          <Text width="fill-parent">{personaData.frustrations}</Text>
+        </AutoLayout>
+
+        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+          <Text fontWeight="bold">Story</Text>
+          <Text width="fill-parent">{personaData.story}</Text>
+        </AutoLayout>
+
+        {/* "Button" to Update Data */}
+        <AutoLayout
+          onClick={() => console.log("clicked")}
+          padding={{ vertical: 10, horizontal: 20 }}
+          fill="#42A5F5"
+          cornerRadius={8}
+          width="fill-parent"
+          horizontalAlignItems="center"
+          verticalAlignItems="center"
+        >
+          <Text fontSize={16} fill="#FFFFFF" fontWeight="bold">Update Data</Text>
+        </AutoLayout>
       </AutoLayout>
     </AutoLayout>
   );
