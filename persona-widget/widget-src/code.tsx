@@ -4,6 +4,8 @@ const { AutoLayout, useSyncedState, Text, Input, Rectangle } = widget;
 import { Face } from "./face";
 
 interface Sticky {
+  collectionId: string;
+  collectionName: string;
   content: string;
 }
 
@@ -12,7 +14,7 @@ interface Persona {
   content: string;
 }
 
-interface PersonaData {
+interface PersonaDataType {
   type: string;
   name: string;
   age: string;
@@ -26,10 +28,43 @@ interface PersonaData {
   story: string;
 }
 
+import {
+  Block, 
+  PersonaManager,
+  PersonaData,
+  PersonaDetail
+} from "../../Persona";
+
+import {
+  NoteData,
+  NoteDetail
+} from "../../DataSource";
+
+async function fetchStickies(): Promise<NoteData[]> {
+  try {
+    const response = await fetch("http://localhost:8000/stickies/");
+    const data = await response.json();
+    const details: NoteData[] = data.items.map((i: Sticky) => {
+      return {
+        id: i.collectionId,
+        detail: {
+          name: i.collectionName,
+          content: i.content
+        }
+      }
+    })
+    return details
+  } catch (error) {
+    console.log("error fetching stickies.")
+    return [];
+  }
+}
+
 function Persona() {
+  const personaManager = new PersonaManager();
   const [widgetSize, setWidgetSize] = useSyncedState<string>("size", "L");
 
-  const [personaData, setPersonaData] = useSyncedState<PersonaData>("personaData", {
+  const [personaData, setPersonaData] = useSyncedState<PersonaDataType>("personaData", {
     type: "",
     name: "",
     age: "",
@@ -47,6 +82,25 @@ function Persona() {
     try {
       const response = await fetch("http://localhost:8000/personas/")
       const data = await response.json();
+
+      const bioData = {
+        type: data.type,
+        name: data.name,
+        age: data.age,
+        location: data.location,
+        occupation: data.occupation,
+        status: data.status,
+        education: data.education
+      };
+      const blocks: Block[] = [
+        { title: "Motivation", detail: data.motivations },
+        { title: "Goal", detail: data.goals },
+        { title: "Frustration", detail: data.frustrations },
+        { title: "Story", detail: data.story },
+      ];
+      const personaDetail = new PersonaDetail(bioData, blocks);
+      const personaData = new PersonaData(0, personaDetail);
+
       setPersonaData({
         type: data.type,
         name: data.name,
@@ -197,3 +251,4 @@ function Persona() {
   );
 }
 widget.register(Persona);
+fetchStickies()
