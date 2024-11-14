@@ -4,9 +4,9 @@ type Name = string;
 type Age = number;
 type Location = string;
 type Occupation = string;
-type Status = "Single" | "Married";
-type Education = "PhD" | "Master" | "Bachelor" | "High School";
-type PersonaType = "Primary" | "Secondary" | "Served" | "Anti";
+type Status = string;
+type Education = string;
+type PersonaType = string;
 
 type BioData = {
   type: PersonaType;
@@ -33,10 +33,10 @@ class PersonaDetail implements DataDetail<"Persona"> {
 }
 
 class PersonaData implements Data<"Persona"> {
-  id: number;
+  id: String;
   detail: DataDetail<"Persona">;
 
-  constructor(id: number, detail: DataDetail<"Persona">) {
+  constructor(id: String, detail: DataDetail<"Persona">) {
     this.id = id;
     this.detail = detail;
   }
@@ -79,4 +79,4 @@ Served personas = these are personas that are not customers or users of your com
 Anti-personas = these are users or customers that are not the users of the product or services of your company, and are not directly affected by the product either. For example, a hotel cleaner would most likely not be affected by the work of the receptionist directly. Sometimes, thinking of who the persona is not helps flesh out the parts that make the persona unique.
 */
 
-export {PersonaData, PersonaDetail, PersonaManager, Block}
+export {PersonaData, PersonaDetail, PersonaManager, Block, BioData}

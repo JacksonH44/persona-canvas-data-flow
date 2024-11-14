@@ -11,7 +11,7 @@ interface DatabaseManager {
 Business Layer
 */
 
-type UUID = number;
+type UUID = String;
 
 type DataType = "Null" | "Note" | "Persona" | "UserStory" | "UserJourneyMap";
 

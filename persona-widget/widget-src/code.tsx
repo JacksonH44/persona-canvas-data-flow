@@ -1,5 +1,5 @@
 const { widget } = figma;
-const { AutoLayout, useSyncedState, Text, Input, Rectangle } = widget;
+const { AutoLayout, useSyncedState, Text, useEffect, Input } = widget;
 
 import { Face } from "./face";
 
@@ -32,13 +32,16 @@ import {
   Block, 
   PersonaManager,
   PersonaData,
-  PersonaDetail
+  PersonaDetail,
+  BioData
 } from "../../Persona";
 
 import {
   NoteData,
   NoteDetail
 } from "../../DataSource";
+
+const personaManager = new PersonaManager();
 
 async function fetchStickies(): Promise<NoteData[]> {
   try {
@@ -60,30 +63,16 @@ async function fetchStickies(): Promise<NoteData[]> {
   }
 }
 
-function Persona() {
-  const personaManager = new PersonaManager();
-  const [widgetSize, setWidgetSize] = useSyncedState<string>("size", "L");
-
-  const [personaData, setPersonaData] = useSyncedState<PersonaDataType>("personaData", {
-    type: "",
-    name: "",
-    age: "",
-    location: "",
-    occupation: "",
-    status: "",
-    education: "",
-    motivations: "",
-    goals: "",
-    frustrations: "",
-    story: ""
-  });
+function Persona() {  
+  const [bioData, setBioData] = useSyncedState<BioData | null>("bioData", null)
+  const [blockData, setBlockData] = useSyncedState<Block[]>("blockData", [])
 
   async function fetchPersonaData() {
     try {
       const response = await fetch("http://localhost:8000/personas/")
       const data = await response.json();
 
-      const bioData = {
+      const bio = {
         type: data.type,
         name: data.name,
         age: data.age,
@@ -98,81 +87,23 @@ function Persona() {
         { title: "Frustration", detail: data.frustrations },
         { title: "Story", detail: data.story },
       ];
-      const personaDetail = new PersonaDetail(bioData, blocks);
-      const personaData = new PersonaData(0, personaDetail);
 
-      setPersonaData({
-        type: data.type,
-        name: data.name,
-        age: data.age,
-        location: data.location,
-        occupation: data.occupation,
-        status: data.status,
-        education: data.education,
-        motivations: data.motivations,
-        goals: data.goals,
-        frustrations: data.frustrations,
-        story: data.story
-      })
+      setBioData(bio)
+      setBlockData(blocks)
     } catch (error) {
       console.error("Error fetching personas:", error)
     }
   }
 
-  // async function pushPersonaData() {
-  //   for (const data of personaData) {
-  //     await pushOnePersona(data)
-  //   }
-  //   setPersonaData(personaData)
-  // }
+  function updateBlockDetail(index: number, newDetail: string) {
+    const updatedBlocks = [...blockData];
+    updatedBlocks[index] = { ...updatedBlocks[index], detail: newDetail };
+    setBlockData(updatedBlocks);
+  }  
 
-  async function pushOnePersona(persona: Persona) {
-    try {
-      const response = await fetch("http://localhost:8000/persona/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: persona.content }),
-      });
-
-  
-      if (response.ok) {
-        const responseData = await response.json()
-        persona.id = responseData.data.id
-        console.log("Persona data added successfully!");
-      } else {
-        console.error("Failed to add persona data:", response.statusText);
-      }
-    } catch (e) {
-      console.log("error: ", e)
-    }
-  }
-
-  // async function updatePersonaData() {
-  //   try {
-  //     for (const persona of personaData) {
-  //       const response = await fetch(`http://localhost:8000/persona/${persona.id}`, {
-  //         method: "PATCH",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ content: `CHANGED: ${persona.content}` }),
-  //       });
-    
-  //       if (response.ok) {
-  //         console.log("Persona data updated successfully!");
-  //       } else {
-  //         console.error("Failed to update persona data:", response.statusText);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating persona data:", error);
-  //   }
-  // }
-
-  // Determine how many items to show
-  // const itemsToShow = widgetSize == "S" ? personaData.slice(0, 3) : personaData;
+  // useEffect(() => {
+  //   console.log(blockData)
+  // })
 
   return (
     <AutoLayout
@@ -194,45 +125,54 @@ function Persona() {
         </AutoLayout>
 
         {/* Basic Details */}
-        <AutoLayout direction="vertical" spacing={4} padding={{ top: 12, bottom: 12 }}>
-          <Text fontWeight="bold">Type</Text>
-          <Text>{personaData.type}</Text>
-          <Text fontWeight="bold">Name</Text>
-          <Text>{personaData.name}</Text>
-          <Text fontWeight="bold">Age</Text>
-          <Text>{personaData.age}</Text>
-          <Text fontWeight="bold">Location</Text>
-          <Text>{personaData.location}</Text>
-          <Text fontWeight="bold">Occupation</Text>
-          <Text>{personaData.occupation}</Text>
-          <Text fontWeight="bold">Status (Married or Single)</Text>
-          <Text>{personaData.status}</Text>
-          <Text fontWeight="bold">Education</Text>
-          <Text>{personaData.education}</Text>
-        </AutoLayout>
+        {bioData && (
+          <>
+            <AutoLayout direction="vertical" spacing={4} padding={{ top: 12, bottom: 12 }}>
+              <Text fontWeight="bold">Type</Text>
+              <Input value={bioData.type} onTextEditEnd={(e) => setBioData({ ...bioData, type: e.characters })}></Input>
+              <Text fontWeight="bold">Name</Text>
+              <Input value={bioData.name} onTextEditEnd={(e) => setBioData({ ...bioData, name: e.characters })}></Input>
+              <Text fontWeight="bold">Age</Text>
+              <Input value={String(bioData.age)} onTextEditEnd={(e) => setBioData({ ...bioData, age: Number(e.characters) })}></Input>
+              <Text fontWeight="bold">Location</Text>
+              <Input value={bioData.location} onTextEditEnd={(e) => setBioData({ ...bioData, location: e.characters })}></Input>
+              <Text fontWeight="bold">Occupation</Text>
+              <Input value={bioData.occupation} onTextEditEnd={(e) => setBioData({ ...bioData, occupation: e.characters })}></Input>
+              <Text fontWeight="bold">Status (Married or Single)</Text>
+              <Input value={bioData.status} onTextEditEnd={(e) => setBioData({ ...bioData, status: e.characters })}></Input>
+              <Text fontWeight="bold">Education</Text>
+              <Input value={bioData.education} onTextEditEnd={(e) => setBioData({ ...bioData, education: e.characters })}></Input>
+            </AutoLayout>
+          </>
+        )}
+        
       </AutoLayout>
 
       {/* Right Section: Motivations, Goals, Frustrations, and Story */}
       <AutoLayout direction="vertical" spacing={12} width="fill-parent">
-        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
-          <Text fontWeight="bold">Motivations</Text>
-          <Text width="fill-parent">{personaData.motivations}</Text>
-        </AutoLayout>
+      {blockData.length === 4 && (
+        <>
+          <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+            <Text fontWeight="bold">Motivations</Text>
+            <Input value={blockData[0].detail} onTextEditEnd={(e) => updateBlockDetail(0, e.characters)} width="fill-parent" />
+          </AutoLayout>
 
-        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
-          <Text fontWeight="bold">Goals</Text>
-          <Text width="fill-parent">{personaData.goals}</Text>
-        </AutoLayout>
+          <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+            <Text fontWeight="bold">Goals</Text>
+            <Input value={blockData[1].detail} onTextEditEnd={(e) => updateBlockDetail(1, e.characters)} width="fill-parent" />
+          </AutoLayout>
 
-        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
-          <Text fontWeight="bold">Frustrations</Text>
-          <Text width="fill-parent">{personaData.frustrations}</Text>
-        </AutoLayout>
+          <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+            <Text fontWeight="bold">Frustrations</Text>
+            <Input value={blockData[2].detail} onTextEditEnd={(e) => updateBlockDetail(2, e.characters)} width="fill-parent" />
+          </AutoLayout>
 
-        <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
-          <Text fontWeight="bold">Story</Text>
-          <Text width="fill-parent">{personaData.story}</Text>
-        </AutoLayout>
+          <AutoLayout direction="vertical" padding={12} spacing={8} fill="#FFFFFF" cornerRadius={8} width="fill-parent">
+            <Text fontWeight="bold">Story</Text>
+            <Input value={blockData[3].detail} onTextEditEnd={(e) => updateBlockDetail(3, e.characters)} width="fill-parent" />
+          </AutoLayout>
+        </>
+      )}
 
         {/* "Button" to Update Data */}
         <AutoLayout
