@@ -57,13 +57,23 @@ def add_sticky_to_pocketbase(content: str):
     return response.json()
 
 # Helper function to add a sticky note to Pocketbase
-def add_persona_to_pocketbase(content: str):
+def add_persona_to_pocketbase(persona):
     url = f"{POCKETBASE_URL}/api/collections/{PERSONA_COLLECTION}/records"
     headers = {"Content-Type": "application/json"}
     
     # Construct the data payload
     data = {
-        "content": content
+        "type": persona["type"],
+        "name": persona["name"],
+        "age": persona["age"],
+        "location": persona["location"],
+        "occupation": persona["occupation"],
+        "status": persona["status"],
+        "education": persona["education"],
+        "motivation": persona["motivations"],
+        "frustration": persona["frustrations"],
+        "goal": persona["goals"],
+        "story": persona["story"]
     }
 
     # Send POST request to Pocketbase
@@ -141,6 +151,7 @@ async def get_all_personas():
         content_string = " NOTE: ".join(contents)
 
         persona = create_persona(content_string)
+        add_persona_to_pocketbase(persona)
 
         return persona
         

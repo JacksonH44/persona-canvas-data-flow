@@ -14,20 +14,6 @@ interface Persona {
   content: string;
 }
 
-interface PersonaDataType {
-  type: string;
-  name: string;
-  age: string;
-  location: string;
-  occupation: string;
-  status: string;
-  education: string;
-  motivations: string;
-  goals: string;
-  frustrations: string;
-  story: string;
-}
-
 import {
   Block, 
   PersonaManager,
@@ -133,7 +119,7 @@ function Persona() {
               <Text fontWeight="bold">Name</Text>
               <Input value={bioData.name} onTextEditEnd={(e) => setBioData({ ...bioData, name: e.characters })}></Input>
               <Text fontWeight="bold">Age</Text>
-              <Input value={String(bioData.age)} onTextEditEnd={(e) => setBioData({ ...bioData, age: Number(e.characters) })}></Input>
+              <Input value={bioData.age} onTextEditEnd={(e) => setBioData({ ...bioData, age: e.characters })}></Input>
               <Text fontWeight="bold">Location</Text>
               <Input value={bioData.location} onTextEditEnd={(e) => setBioData({ ...bioData, location: e.characters })}></Input>
               <Text fontWeight="bold">Occupation</Text>

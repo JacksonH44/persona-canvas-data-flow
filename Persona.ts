@@ -1,7 +1,7 @@
 import { Data, DataDetail, DataManager, FigmaWidget } from "./Common";
 
 type Name = string;
-type Age = number;
+type Age = string;
 type Location = string;
 type Occupation = string;
 type Status = string;

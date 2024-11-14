@@ -2,10 +2,10 @@ import { Data, DataDetail, DataManager, FigmaWidget } from "./Common";
 
 class NullDetail implements DataDetail<"Null"> {}
 class NullData implements Data<"Null"> {
-  id: number;
+  id: string;
   detail: NullDetail;
 
-  constructor(id: number, detail: NullDetail) {
+  constructor(id: string, detail: NullDetail) {
     this.id = id;
     this.detail = detail;
   }
@@ -22,10 +22,10 @@ class NoteDetail implements DataDetail<"Note"> {
 }
 
 class NoteData implements Data<"Note"> {
-  id: number;
+  id: string;
   detail: NoteDetail;
 
-  constructor(id: number, detail: NoteDetail) {
+  constructor(id: string, detail: NoteDetail) {
     this.id = id;
     this.detail = detail;
   }
