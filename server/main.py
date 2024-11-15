@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import requests
 
 from pocketbase import PocketBase
-from llm import create_persona
+from llm import LLM
 
 app = FastAPI()
 
@@ -23,6 +23,7 @@ SOURCE_COLLECTION = "source"
 PERSONA_COLLECTION = "persona"
 
 client = PocketBase(POCKETBASE_URL)
+llm = LLM()
 
 # Define a Pydantic model for the sticky note
 class StickyNote(BaseModel):
@@ -40,6 +41,22 @@ class Persona(BaseModel):
     goals: str
     frustrations: str
     story: str
+
+# Helper function to determine which fields of a persona to update
+def extract_fields_updated_from_source(persona):
+    updated_fields = []
+    
+    # Extract fields from bio_data
+    for field, field_data in persona.get("detail", {}).get("bio_data", {}).items():
+        if field_data.get("updated") == "source":
+            updated_fields.append(field)
+    
+    # Extract block titles from blocks
+    for block in persona.get("detail", {}).get("blocks", []):
+        if block.get("updated") == "source":
+            updated_fields.append(block.get("title"))
+    
+    return updated_fields
 
 # Helper function to add a sticky note to Pocketbase
 def add_sticky_to_pocketbase(content: str):
@@ -103,18 +120,50 @@ async def create_persona_from_source(stickies: list[StickyNote]):
         contents = [sticky.content for sticky in stickies]
         contents = " NOTE: ".join(contents)
         
-        persona = create_persona(contents)
+        persona = llm.create_persona(contents)
         response = add_persona_to_pocketbase(persona)
         
         return { "persona": persona, "id": response["id"] }
     except HTTPException as e:
-        return {"error": str(e)}
+        return {"error": str(e)} 
     
+@app.patch("/persona/{id}")
+def update_persona_from_widget(stickies: list[StickyNote], persona: dict):
+    contents = [sticky.content for sticky in stickies]
+    contents = " NOTE: ".join(contents)
+
+    data = {
+      "type": persona["detail"]["bio_data"]["type"],
+      "name": persona["detail"]["bio_data"]["name"],
+      "age": persona["detail"]["bio_data"]["age"],
+      "location": persona["detail"]["bio_data"]["location"],
+      "occupation": persona["detail"]["bio_data"]["occupation"],
+      "status": persona["detail"]["bio_data"]["status"],
+      "education": persona["detail"]["bio_data"]["education"],
+      "motivations": persona["detail"]["blocks"][0]["detail"],
+      "goals": persona["detail"]["blocks"][1]["detail"],
+      "frustrations": persona["detail"]["blocks"][2]["detail"],
+      "story": persona["detail"]["blocks"][3]["detail"]
+    }
+
+    updated_persona = llm.update_persona_from_source(contents, persona)
+    
+    return updated_persona
 
 @app.patch("/persona/{id}")
 def update_persona(id: str, content: Persona):
     data = {
-        "name": content.name
+        "type": content.type,
+        "name": content.name,
+        "age": content.age,
+        "location": content.location,
+        "occupation": content.occupation,
+        "status": content.status,
+        "education": content.education,
+        "motivations": content.motivations,
+        "goals": content.goals,
+        "frustrations": content.frustrations,
+        "story": content.story
     }
     record = client.collection("persona").update(id, data)
     
@@ -142,7 +191,7 @@ async def get_all_personas():
         contents = [item['content'] for item in data.get('items', [])]
         content_string = " NOTE: ".join(contents)
 
-        persona = create_persona(content_string)
+        persona = llm.create_persona(content_string)
         add_persona_to_pocketbase(persona)
 
         return persona

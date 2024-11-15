@@ -53,20 +53,17 @@ function Persona() {
     const stickyArray = stickies.map((s) => {
       return { content: s.detail.content }
     });
-    if (persona) {
-      console.log("updating from source...");
-    } else {
-      const response = await fetch("http://localhost:8000/create_persona/", {
+    const response = await fetch("http://localhost:8000/create_persona/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(stickyArray)
-      })
-      const data = await response.json();
-      const persona = data.persona;
+    })
+    const data = await response.json();
+    const persona = data.persona;
 
-      const bio: BioData = {
+    const bio: BioData = {
         type: { value: persona.type, updated: "source" },
         name: { value: persona.name, updated: "source" },
         age: { value: persona.age, updated: "source" },
@@ -74,20 +71,19 @@ function Persona() {
         occupation: { value: persona.occupation, updated: "source" },
         status: { value: persona.status, updated: "source" },
         education: { value: persona.education, updated: "source" }
-      };
+    };
 
-      const blocks: Block[] = [
+    const blocks: Block[] = [
         { title: "Motivation", detail: persona.motivations, updated: "source" },
         { title: "Goal", detail: persona.goals, updated: "source" },
         { title: "Frustration", detail: persona.frustrations, updated: "source" },
         { title: "Story", detail: persona.story, updated: "source" },
       ];
     
-      setBioData(bio);
-      setBlockData(blocks);
-      const detail = new PersonaDetail(bio, blocks);
-      setPersona(new PersonaData(data.id, detail));
-    }
+    setBioData(bio);
+    setBlockData(blocks);
+    const detail = new PersonaDetail(bio, blocks);
+    setPersona(new PersonaData(data.id, detail));
   }
 
   async function updateFromWidget() {
@@ -115,9 +111,13 @@ function Persona() {
   }
 
   function updateBlockDetail(index: number, newDetail: string) {
-    const updatedBlocks = [...blockData];
-    updatedBlocks[index] = { ...updatedBlocks[index], detail: newDetail, updated: "widget" };
-    setBlockData(updatedBlocks);
+    if (bioData && persona) {
+      const updatedBlocks = [...blockData];
+      updatedBlocks[index] = { ...updatedBlocks[index], detail: newDetail, updated: "widget" };
+      setBlockData(updatedBlocks);
+      const detail = new PersonaDetail(bioData, blockData);
+      setPersona(new PersonaData(persona.id, detail));
+    }
   }
 
   return (
@@ -146,43 +146,99 @@ function Persona() {
               <Text fontWeight="bold">Type</Text>
               <Input 
                 value={bioData.type.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, type: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, type: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.type.updated === "source" ? Orange : Blue}
               ></Input>
               <Text fontWeight="bold">Name</Text>
               <Input 
                 value={bioData.name.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, name: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, name: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.name.updated === "source" ? Orange : Blue}
               ></Input>
               <Text fontWeight="bold">Age</Text>
               <Input 
                 value={bioData.age.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, age: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, age: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.age.updated === "source" ? Orange : Blue}
               ></Input>
               <Text fontWeight="bold">Location</Text>
               <Input 
                 value={bioData.location.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, location: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, location: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.location.updated === "source" ? Orange : Blue}
               ></Input>
               <Text fontWeight="bold">Occupation</Text>
               <Input 
                 value={bioData.occupation.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, occupation: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, occupation: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.occupation.updated === "source" ? Orange : Blue}
               ></Input>
               <Text fontWeight="bold">Status (Married or Single)</Text>
               <Input 
                 value={bioData.status.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, status: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, status: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.status.updated === "source" ? Orange : Blue}
               ></Input>
               <Text fontWeight="bold">Education</Text>
               <Input 
                 value={bioData.education.value} 
-                onTextEditEnd={(e) => setBioData({ ...bioData, education: { value: e.characters, updated: "widget" } })}
+                onTextEditEnd={
+                  (e) => {
+                    if (persona) {
+                      setBioData({ ...bioData, education: { value: e.characters, updated: "widget" } })
+                      const detail = new PersonaDetail(bioData, blockData);
+                      setPersona(new PersonaData(persona.id, detail));
+                    }
+                  }
+                }
                 fill={bioData.education.updated === "source" ? Orange : Blue}
               ></Input>
             </AutoLayout>
