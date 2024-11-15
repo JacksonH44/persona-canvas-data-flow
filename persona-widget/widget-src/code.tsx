@@ -11,7 +11,9 @@ interface Sticky {
 
 import {
   Block, 
-  BioData
+  BioData,
+  PersonaData,
+  PersonaDetail
 } from "../../Persona";
 
 import {
@@ -42,36 +44,73 @@ async function fetchStickies(): Promise<NoteData[]> {
 }
 
 function Persona() {  
-  const [bioData, setBioData] = useSyncedState<BioData | null>("bioData", null)
-  const [blockData, setBlockData] = useSyncedState<Block[]>("blockData", [])
+  const [bioData, setBioData] = useSyncedState<BioData | null>("bioData", null);
+  const [blockData, setBlockData] = useSyncedState<Block[]>("blockData", []);
+  const [persona, setPersona] = useSyncedState<PersonaData | null>("persona", null);
 
   async function updateFromSource() {
-    const stickies = await fetchStickies()
-    console.log(stickies)
-    try {
-      const response = await fetch("http://localhost:8000/personas/")
+    const stickies = await fetchStickies();
+    const stickyArray = stickies.map((s) => {
+      return { content: s.detail.content }
+    });
+    if (persona) {
+      console.log("updating from source...");
+    } else {
+      const response = await fetch("http://localhost:8000/create_persona/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(stickyArray)
+      })
       const data = await response.json();
+      const persona = data.persona;
 
       const bio: BioData = {
-        type: { value: data.type, updated: "source" },
-        name: { value: data.name, updated: "source" },
-        age: { value: data.age, updated: "source" },
-        location: { value: data.location, updated: "source" },
-        occupation: { value: data.occupation, updated: "source" },
-        status: { value: data.status, updated: "source" },
-        education: { value: data.education, updated: "source" }
+        type: { value: persona.type, updated: "source" },
+        name: { value: persona.name, updated: "source" },
+        age: { value: persona.age, updated: "source" },
+        location: { value: persona.location, updated: "source" },
+        occupation: { value: persona.occupation, updated: "source" },
+        status: { value: persona.status, updated: "source" },
+        education: { value: persona.education, updated: "source" }
       };
-      const blocks: Block[] = [
-        { title: "Motivation", detail: data.motivations, updated: "source" },
-        { title: "Goal", detail: data.goals, updated: "source" },
-        { title: "Frustration", detail: data.frustrations, updated: "source" },
-        { title: "Story", detail: data.story, updated: "source" },
-      ];
 
-      setBioData(bio)
-      setBlockData(blocks)
-    } catch (error) {
-      console.error("Error fetching personas:", error)
+      const blocks: Block[] = [
+        { title: "Motivation", detail: persona.motivations, updated: "source" },
+        { title: "Goal", detail: persona.goals, updated: "source" },
+        { title: "Frustration", detail: persona.frustrations, updated: "source" },
+        { title: "Story", detail: persona.story, updated: "source" },
+      ];
+    
+      setBioData(bio);
+      setBlockData(blocks);
+      const detail = new PersonaDetail(bio, blocks);
+      setPersona(new PersonaData(data.id, detail));
+    }
+  }
+
+  async function updateFromWidget() {
+    if (persona && bioData) {
+      const response = await fetch(`http://localhost:8000/persona/${persona.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          type: bioData.type.value,
+          name: bioData.name.value,
+          age: bioData.age.value,
+          location: bioData.location.value,
+          occupation: bioData.occupation.value,
+          status: bioData.status.value,
+          education: bioData.education.value,
+          motivations: blockData[0].detail,
+          goals: blockData[1].detail,
+          frustrations: blockData[2].detail,
+          story: blockData[3].detail
+        })
+      })
     }
   }
 
@@ -213,7 +252,7 @@ function Persona() {
         {blockData.length == 4 && (
           <>
             <AutoLayout
-              onClick={updateFromSource}
+              onClick={updateFromWidget}
               padding={{ vertical: 10, horizontal: 20 }}
               fill="#42A5F5"
               cornerRadius={8}
@@ -230,4 +269,3 @@ function Persona() {
   );
 }
 widget.register(Persona);
-fetchStickies()
