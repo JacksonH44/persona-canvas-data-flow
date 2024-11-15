@@ -8,19 +8,30 @@ type Status = string;
 type Education = string;
 type PersonaType = string;
 
+type UpdateSource = "source" | "widget";
+
+type BioDataField<T> = {
+  value: T;
+  updated: UpdateSource;
+}
+
 type BioData = {
-  type: PersonaType;
-  name: Name;
-  age: Age;
-  location: Location;
-  occupation: Occupation;
-  status: Status;
-  education: Education;
+  type: BioDataField<PersonaType>;
+  name: BioDataField<Name>;
+  age: BioDataField<Age>;
+  location: BioDataField<Location>;
+  occupation: BioDataField<Occupation>;
+  status: BioDataField<Status>;
+  education: BioDataField<Education>;
 };
 
 type BlockTitle = "Motivation" | "Frustration" | "Goal" | "Story";
 type BlockDetail = string;
-type Block = { title: BlockTitle; detail: BlockDetail };
+type Block = { 
+  title: BlockTitle;
+  detail: BlockDetail;
+  updated: UpdateSource;
+};
 
 class PersonaDetail implements DataDetail<"Persona"> {
   bio_data: BioData;
