@@ -49,21 +49,23 @@ function Persona() {
   const [persona, setPersona] = useSyncedState<PersonaData | null>("persona", null);
 
   async function updateFromSource() {
-    const stickies = await fetchStickies();
-    const stickyArray = stickies.map((s) => {
-      return { content: s.detail.content }
-    });
-    const response = await fetch("http://localhost:8000/create_persona/", {
+    try {
+      const stickies = await fetchStickies();
+      const stickyArray = stickies.map((s) => {
+        return { content: s.detail.content }
+      });
+
+      const response = await fetch("http://localhost:8000/create_persona/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(stickyArray)
-    })
-    const data = await response.json();
-    const persona = data.persona;
+      })
+      const data = await response.json();
+      const persona = data.persona;
 
-    const bio: BioData = {
+      const bio: BioData = {
         type: { value: persona.type, updated: "source" },
         name: { value: persona.name, updated: "source" },
         age: { value: persona.age, updated: "source" },
@@ -71,19 +73,22 @@ function Persona() {
         occupation: { value: persona.occupation, updated: "source" },
         status: { value: persona.status, updated: "source" },
         education: { value: persona.education, updated: "source" }
-    };
+      };
 
-    const blocks: Block[] = [
+      const blocks: Block[] = [
         { title: "Motivation", detail: persona.motivations, updated: "source" },
         { title: "Goal", detail: persona.goals, updated: "source" },
         { title: "Frustration", detail: persona.frustrations, updated: "source" },
         { title: "Story", detail: persona.story, updated: "source" },
       ];
     
-    setBioData(bio);
-    setBlockData(blocks);
-    const detail = new PersonaDetail(bio, blocks);
-    setPersona(new PersonaData(data.id, detail));
+      setBioData(bio);
+      setBlockData(blocks);
+      const detail = new PersonaDetail(bio, blocks);
+      setPersona(new PersonaData(data.id, detail));
+    } catch (error) {
+      console.error("Error in updateFromSource")
+    }
   }
 
   async function updateFromWidget() {
@@ -151,7 +156,6 @@ function Persona() {
         {/* Header with Avatar */}
         <AutoLayout direction="horizontal" spacing={16} verticalAlignItems="center">
           <Face></Face>
-          <Text fontSize={20} fontWeight="bold">Persona</Text>
         </AutoLayout>
 
         {/* Basic Details */}
@@ -188,11 +192,11 @@ function Persona() {
               ></Input>
               <Text fontWeight="bold">Age</Text>
               <Input 
-                value={bioData.age.value} 
+                value={String(bioData.age.value)} 
                 onTextEditEnd={
                   (e) => {
                     if (persona) {
-                      setBioData({ ...bioData, age: { value: e.characters, updated: "widget" } })
+                      setBioData({ ...bioData, age: { value: Number(e.characters), updated: "widget" } })
                       const detail = new PersonaDetail(bioData, blockData);
                       setPersona(new PersonaData(persona.id, detail));
                     }

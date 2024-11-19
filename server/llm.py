@@ -15,6 +15,12 @@ class LLM:
     )
     self.history = []
 
+  def find_updated_fields(self, persona_detail):
+    """Find all fields of a persona that were updated by the widget."""
+    updated_bios = {key: value['value'] for key, value in persona_detail["bio_data"].items() if value.get('updated') == 'widget'}
+    updated_blocks = [{'title': block['title'], 'detail': block['detail']} for block in persona_detail["blocks"] if block.get('updated') == 'widget']
+    return updated_bios, updated_blocks
+
   def create_persona(self, stickies):
     chat_completion = self.client.chat.completions.create(
         messages=[
@@ -32,24 +38,27 @@ class LLM:
                 "role": "user",
                 "content": 
                 """
+                # Instruction
                 Improve the following prompt:
                 You are an expert in UX design.
                 You take as input a series of user notes in the form
                 NOTE: <message> and output a specific user persona from those notes
                 in JSON format. Your response should be in the JSON format
+                # Output Format
                 {
-                    type: one of "primary", "secondary", "served", or "anti",
+                    type: "Primary" | "Secondary" | "Served" | "Anti",
                     name: string,
-                    age: string,
+                    age: number,
                     location: string
                     occupation: string
-                    status: "married" or "single",
-                    education: string,
-                    motivations: 2 or 3 sentences,
-                    goals: 2 or 3 sentences,
-                    frustrations: 2 or 3 sentences,
-                    story: 2 or 3 sentences
+                    status: "Married" | "Single",
+                    education: "High School", "Bachelors" | "Masters" | "PhD",
+                    motivations: 2 or 3 sentence string,
+                    goals: 2 or 3 sentence string,
+                    frustrations: 2 or 3 sentence string,
+                    story: 2 or 3 sentence string
                 }
+                # Input format
                 And the input as a user message is a paragraph where each sentence starts 
                 with NOTE: <message> where <message> is something that has been written on 
                 the sticky. Your response should be very specific in terms of name, age, location,
@@ -87,6 +96,39 @@ class LLM:
     return json.loads(persona)
   
   def update_persona_from_widget(self, persona):
+    # Find which fields in the bios section and blocks section need to be updated
+    updated_bios, updated_blocks = self.find_updated_fields(persona["detail"])
+
+    # Update any other bio fields
+    bio_update_system_message = {
+      "role": "system",
+      "content": """
+      # Instruction
+      You are an expert in UX design. Given updated fields in a user
+      persona, update any fields of the persona that are inconsistent with the new information.
+      Output your response in the following JSON output format:
+      # Example Output
+      {
+        type: "Primary" | "Secondary" | "Served" | "Anti",
+        name: string,
+        age: number,
+        location: string
+        occupation: string
+        status: "Married" | "Single",
+        education: "High School", "Bachelors" | "Masters" | "PhD"
+      }
+      """
+    }
+    self.history.append(bio_update_system_message)
+    self.history.append({ "role": "user", "content": str(updated_bios) })
+    bio_completion = self.client.chat.completions.create(
+      messages=self.history,
+      model="llama-3.1-70b-versatile",
+      response_format={ "type": "json_object" }
+    )
+    updated_bio = bio_completion.choices[0].message.content
+    print(updated_bio)
+    
     # chat_completion = self.client.chat.completions.create(
     #     messages=[
     #         {
@@ -146,18 +188,18 @@ class LLM:
     #     model="llama-3.1-70b-versatile",
     #     response_format={ "type": "json_object" }
     # )
-    current_msg = {
-      "role": "user",
-      "content": "what have we talked about in our conversation so far?"
-    }
-    self.history.append(current_msg)
-    
-    chat_completion = self.client.chat.completions.create(
-      messages=self.history,
-      model="llama-3.1-70b-versatile"
-    )
-    updated_persona = chat_completion.choices[0].message.content
-    print(updated_persona)
+    # current_msg = {
+    #   "role": "user",
+    #   "content": "what have we talked about in our conversation so far?"
+    # }
+    # self.history.append(current_msg)
+
+    # chat_completion = self.client.chat.completions.create(
+    #   messages=self.history,
+    #   model="llama-3.1-70b-versatile"
+    # )
+    # updated_persona = chat_completion.choices[0].message.content
+    # print(updated_persona)
     # self.previous_persona = updated_persona
     # return json.loads(updated_persona)
 
