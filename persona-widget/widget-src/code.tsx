@@ -93,20 +93,35 @@ function Persona() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          type: bioData.type.value,
-          name: bioData.name.value,
-          age: bioData.age.value,
-          location: bioData.location.value,
-          occupation: bioData.occupation.value,
-          status: bioData.status.value,
-          education: bioData.education.value,
-          motivations: blockData[0].detail,
-          goals: blockData[1].detail,
-          frustrations: blockData[2].detail,
-          story: blockData[3].detail
-        })
+        body: JSON.stringify(persona)
       })
+
+      const data = await response.json();
+      const updatedPersona = data.persona;
+
+      const bio: BioData = {
+        type: { value: updatedPersona.bio_data.type.value, updated: "source" },
+        name: { value: updatedPersona.bio_data.name.value, updated: "source" },
+        age: { value: updatedPersona.bio_data.age.value, updated: "source" },
+        location: { value: updatedPersona.bio_data.location.value, updated: "source" },
+        occupation: { value: updatedPersona.bio_data.occupation.value, updated: "source" },
+        status: { value: updatedPersona.bio_data.status.value, updated: "source" },
+        education: { value: updatedPersona.bio_data.education.value, updated: "source" }
+      };
+
+      const blocks: Block[] = [
+        { title: "Motivation", detail: updatedPersona.blocks[0].detail, updated: "source" },
+        { title: "Goal", detail: updatedPersona.blocks[1].detail, updated: "source" },
+        { title: "Frustration", detail: updatedPersona.blocks[2].detail, updated: "source" },
+        { title: "Story", detail: updatedPersona.blocks[3].detail, updated: "source" },
+      ];
+    
+      setBioData(bio);
+      setBlockData(blocks);
+      const detail = new PersonaDetail(bio, blocks);
+      setPersona(new PersonaData(persona.id, detail));
+      console.log("New persona");
+      console.log(persona);
     }
   }
 

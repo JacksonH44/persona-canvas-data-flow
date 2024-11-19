@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
+import json
 
 from pocketbase import PocketBase
 from llm import LLM
@@ -128,27 +129,27 @@ async def create_persona_from_source(stickies: list[StickyNote]):
         return {"error": str(e)} 
     
 @app.patch("/persona/{id}")
-def update_persona_from_widget(stickies: list[StickyNote], persona: dict):
-    contents = [sticky.content for sticky in stickies]
-    contents = " NOTE: ".join(contents)
+def update_persona_from_widget(persona: dict):
+    # contents = [sticky.content for sticky in stickies]
+    # contents = " NOTE: ".join(contents)
 
-    data = {
-      "type": persona["detail"]["bio_data"]["type"],
-      "name": persona["detail"]["bio_data"]["name"],
-      "age": persona["detail"]["bio_data"]["age"],
-      "location": persona["detail"]["bio_data"]["location"],
-      "occupation": persona["detail"]["bio_data"]["occupation"],
-      "status": persona["detail"]["bio_data"]["status"],
-      "education": persona["detail"]["bio_data"]["education"],
-      "motivations": persona["detail"]["blocks"][0]["detail"],
-      "goals": persona["detail"]["blocks"][1]["detail"],
-      "frustrations": persona["detail"]["blocks"][2]["detail"],
-      "story": persona["detail"]["blocks"][3]["detail"]
-    }
-
-    updated_persona = llm.update_persona_from_source(contents, persona)
+    # data = {
+    #   "type": persona["detail"]["bio_data"]["type"],
+    #   "name": persona["detail"]["bio_data"]["name"],
+    #   "age": persona["detail"]["bio_data"]["age"],
+    #   "location": persona["detail"]["bio_data"]["location"],
+    #   "occupation": persona["detail"]["bio_data"]["occupation"],
+    #   "status": persona["detail"]["bio_data"]["status"],
+    #   "education": persona["detail"]["bio_data"]["education"],
+    #   "motivations": persona["detail"]["blocks"][0]["detail"],
+    #   "goals": persona["detail"]["blocks"][1]["detail"],
+    #   "frustrations": persona["detail"]["blocks"][2]["detail"],
+    #   "story": persona["detail"]["blocks"][3]["detail"]
+    # }
+    updated_persona = llm.update_persona_from_widget(persona)
+    print(json.dumps(updated_persona, indent=2))
     
-    return updated_persona
+    return { "persona": updated_persona }
 
 @app.patch("/persona/{id}")
 def update_persona(id: str, content: Persona):
