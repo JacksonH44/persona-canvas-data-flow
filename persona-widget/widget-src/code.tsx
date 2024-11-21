@@ -100,33 +100,29 @@ function Persona() {
         },
         body: JSON.stringify(persona)
       })
-
       const data = await response.json();
-      const updatedPersona = data.persona;
 
       const bio: BioData = {
-        type: { value: updatedPersona.bio_data.type.value, updated: "source" },
-        name: { value: updatedPersona.bio_data.name.value, updated: "source" },
-        age: { value: updatedPersona.bio_data.age.value, updated: "source" },
-        location: { value: updatedPersona.bio_data.location.value, updated: "source" },
-        occupation: { value: updatedPersona.bio_data.occupation.value, updated: "source" },
-        status: { value: updatedPersona.bio_data.status.value, updated: "source" },
-        education: { value: updatedPersona.bio_data.education.value, updated: "source" }
+        type: { value: data.persona.type, updated: bioData.type.updated },
+        name: { value: data.persona.name, updated: bioData.name.updated },
+        age: { value: data.persona.age, updated: bioData.age.updated },
+        location: { value: data.persona.location, updated: bioData.location.updated },
+        occupation: { value: data.persona.occupation, updated: bioData.occupation.updated },
+        status: { value: data.persona.status, updated: bioData.status.updated },
+        education: { value: data.persona.education, updated: bioData.education.updated }
       };
 
       const blocks: Block[] = [
-        { title: "Motivation", detail: updatedPersona.blocks[0].detail, updated: "source" },
-        { title: "Goal", detail: updatedPersona.blocks[1].detail, updated: "source" },
-        { title: "Frustration", detail: updatedPersona.blocks[2].detail, updated: "source" },
-        { title: "Story", detail: updatedPersona.blocks[3].detail, updated: "source" },
+        { title: "Motivation", detail: data.persona.motivations, updated: "source" },
+        { title: "Goal", detail: data.persona.goals, updated: "source" },
+        { title: "Frustration", detail: data.persona.frustrations, updated: "source" },
+        { title: "Story", detail: data.persona.story, updated: "source" },
       ];
     
       setBioData(bio);
       setBlockData(blocks);
       const detail = new PersonaDetail(bio, blocks);
       setPersona(new PersonaData(persona.id, detail));
-      console.log("New persona");
-      console.log(persona);
     }
   }
 
