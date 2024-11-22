@@ -98,6 +98,39 @@ class LLM:
     # Find which fields in the bios section and blocks section need to be updated
     updated_bios, updated_blocks = self.find_updated_fields(persona["detail"])
 
+    # Update other bio fields
+    bio_update_system_message = {
+      "role": "system",
+      "content": """
+      # Instruction
+      You are an expert in UX design. Given new bio fields, update name, age, location,
+      occupation, status, education to be consistent with the new bio field. Keep the changes
+      minimal.
+      # Example
+      Age changes from 17 to 30, update status to "Married", keep all other bio fields the same.
+      # Output
+      Output your answer in the following JSON format:
+      {
+        type: "Primary" | "Secondary" | "Served" | "Anti",
+        name: string,
+        age: number,
+        location: string
+        occupation: string
+        status: "Married" | "Single",
+        education: "High School" | "Bachelors" | "Masters" | "PhD"
+      }
+      """
+    }
+    self.history.append(bio_update_system_message)
+    self.history.append({ "role": "user", "content": str(updated_bios) })
+    bio_completion = self.client.chat.completions.create(
+      messages=self.history,
+      model="llama-3.1-70b-versatile",
+      response_format={ "type": "json_object" }
+    )
+    completion = bio_completion.choices[0].message.content
+    self.history.append({ "role": "assistant", "content": completion })
+
     # Update blocks
     block_update_system_message = {
       "role": "system",
@@ -105,7 +138,8 @@ class LLM:
       # Instruction
       You are an expert in UX design. Given updated fields in a user
       persona, update motivations, goals, frustrations, story fields to be consistent
-      with new bio data.
+      with new bio data. Keep the changes minimal and do not change the essence of the 
+      persona.
       Output your response in the following JSON output format:
       # Example Output
       {
@@ -130,7 +164,7 @@ class LLM:
       "role": "user",
       "content": """
       # Instruction
-      Great! Now output the most updated version of the full persona
+      Output the most updated version of the full persona
       # Output format
       Output your answer in JSON format:
       {
@@ -140,7 +174,7 @@ class LLM:
         location: string
         occupation: string
         status: "Married" | "Single",
-        education: "High School", "Bachelors" | "Masters" | "PhD",
+        education: "High School" | "Bachelors" | "Masters" | "PhD",
         motivations: 2 or 3 sentence string,
         goals: 2 or 3 sentence string,
         frustrations: 2 or 3 sentence string,
@@ -151,7 +185,7 @@ class LLM:
     self.history.append(final_msg)
     final_chat = self.client.chat.completions.create(
       messages=self.history,
-      model="llama-3.1-70b-versatile",
+      model="llama-3.1-8b-instant",
       response_format={ "type": "json_object" }
     )
     final_completion = final_chat.choices[0].message.content
