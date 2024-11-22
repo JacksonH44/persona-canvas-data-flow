@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
-import json
 
 from pocketbase import PocketBase
 from llm import LLM
@@ -129,27 +128,11 @@ async def create_persona_from_source(stickies: list[StickyNote]):
         return {"error": str(e)} 
     
 @app.patch("/persona/{id}")
-def update_persona_from_widget(persona: dict):
+def update_persona_from_widget(id: str, persona: dict):
     updated_persona = llm.update_persona_from_widget(persona)
+    client.collection("persona").update(id, updated_persona)
     
     return { "persona": updated_persona }
-
-@app.patch("/persona/{id}")
-def update_persona(id: str, content: Persona):
-    data = {
-        "type": content.type,
-        "name": content.name,
-        "age": content.age,
-        "location": content.location,
-        "occupation": content.occupation,
-        "status": content.status,
-        "education": content.education,
-        "motivations": content.motivations,
-        "goals": content.goals,
-        "frustrations": content.frustrations,
-        "story": content.story
-    }
-    record = client.collection("persona").update(id, data)
     
 # Endpoint to retrieve all stickies
 @app.get("/stickies/")
