@@ -10,12 +10,12 @@ function Widget() {
 
   async function fetchStoryData() {
     try {
-      const response = await fetch("http://localhost:8000/personas/")
-      const data = await response.json();
-      const contents = data.items.map((i: UserStory) => {
-        return i.content
-      })
-      setStoryData(contents)
+      // const response = await fetch("http://localhost:8000/personas/")
+      // const data = await response.json();
+      // const contents = data.items.map((i: UserStory) => {
+      //   return i.content
+      // })
+      // setStoryData(contents)
     } catch (error) {
       console.error("Error fetching user stories:", error)
     }
@@ -37,11 +37,11 @@ function Widget() {
         height={50}
         fill="#007AFF"
         cornerRadius={8}
-        onClick={fetchStoryData}  // Fetch data when rectangle is clicked
+        onClick={fetchStoryData}
         horizontalAlignItems="center"
         verticalAlignItems="center"
       >
-        <Text fill="#FFFFFF" fontSize={16}>Fetch Data</Text>
+        <Text fill="#FFFFFF" fontSize={16}>Generate User Stories</Text>
       </AutoLayout>
       <AutoLayout
         direction="vertical" 

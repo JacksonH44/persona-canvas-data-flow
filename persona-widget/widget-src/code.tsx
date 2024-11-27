@@ -1,5 +1,5 @@
 const { widget } = figma;
-const { AutoLayout, useSyncedState, Text, useEffect, Input } = widget;
+const { AutoLayout, useSyncedState, Text, Input } = widget;
 
 import { Face } from "./face";
 
@@ -138,7 +138,7 @@ function Persona() {
 
   return (
     <AutoLayout
-      direction="vertical"
+      direction="horizontal"
       padding={16}
       spacing={16}
       fill="#F8F9FA"

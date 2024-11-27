@@ -12,13 +12,12 @@
   },
   "author": "Figma",
   "license": "MIT License",
-  "dependencies": {},
   "devDependencies": {
-    "@figma/plugin-typings": "*",
+    "@figma/plugin-typings": "^1.103.0",
     "@figma/widget-typings": "*",
     "concurrently": "^6.3.0",
     "esbuild": "^0.13.5",
     "prettier": "^2.3.2",
-    "typescript": "^4.4.2"
+    "typescript": "^4.9.5"
   }
 }

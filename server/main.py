@@ -77,9 +77,12 @@ def add_sticky_to_pocketbase(content: str):
     return response.json()
 
 # Helper function to add a sticky note to Pocketbase
-def add_persona_to_pocketbase(persona):
+async def add_persona_to_pocketbase(persona):
     url = f"{POCKETBASE_URL}/api/collections/{PERSONA_COLLECTION}/records"
     headers = {"Content-Type": "application/json"}
+
+    # Make all other personas inactive
+    await make_personas_inactive()
     
     # Construct the data payload
     data = {
@@ -93,7 +96,8 @@ def add_persona_to_pocketbase(persona):
         "motivation": persona["motivations"],
         "frustration": persona["frustrations"],
         "goal": persona["goals"],
-        "story": persona["story"]
+        "story": persona["story"],
+        "active": persona["active"]
     }
 
     # Send POST request to Pocketbase
@@ -104,6 +108,27 @@ def add_persona_to_pocketbase(persona):
         raise HTTPException(status_code=response.status_code, detail=response.text)
     
     return response.json()
+
+async def get_all_personas():
+    try:
+        # Make a GET request to the Pocketbase API to fetch all records in the "persona" collection
+        response = requests.get(f"{POCKETBASE_URL}/api/collections/{PERSONA_COLLECTION}/records")
+        response.raise_for_status()
+
+        data = response.json()
+        return data["items"]
+        
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
+    
+async def make_personas_inactive(id: str = None):
+    """Make all personas except for the one with id inactive"""
+    all_personas = await get_all_personas()
+    for persona in all_personas:
+        if persona["id"] != id:
+            persona["active"] = False
+            client.collection("persona").update(persona["id"], persona)
+
 
 # Endpoint to receive POST request from Figma plugin
 @app.post("/sticky/")
@@ -121,15 +146,18 @@ async def create_persona_from_source(stickies: list[StickyNote]):
         contents = " NOTE: ".join(contents)
         
         persona = llm.create_persona(contents)
-        response = add_persona_to_pocketbase(persona)
+        persona["active"] = True
+        response = await add_persona_to_pocketbase(persona)
         
         return { "persona": persona, "id": response["id"] }
     except HTTPException as e:
         return {"error": str(e)} 
     
 @app.patch("/persona/{id}")
-def update_persona_from_widget(id: str, persona: dict):
+async def update_persona_from_widget(id: str, persona: dict):
     updated_persona = llm.update_persona_from_widget(persona)
+    updated_persona["active"] = True
+    await make_personas_inactive(id)
     client.collection("persona").update(id, updated_persona)
     
     return { "persona": updated_persona }
@@ -148,7 +176,7 @@ async def get_all_stickies():
         raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
     
 @app.get("/persona/")
-async def get_all_personas():
+async def get_persona():
     try:
         # Make a GET request to the Pocketbase API to fetch all records in the "persona" collection
         response = requests.get(f"{POCKETBASE_URL}/api/collections/{SOURCE_COLLECTION}/records")
