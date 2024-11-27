@@ -138,7 +138,7 @@ function Persona() {
 
   return (
     <AutoLayout
-      direction="horizontal"
+      direction="vertical"
       padding={16}
       spacing={16}
       fill="#F8F9FA"
@@ -149,7 +149,6 @@ function Persona() {
     >
       {/* Left Section: Avatar and Basic Details */}
       <AutoLayout direction="vertical" spacing={12} width={200}>
-        {/* Header with Avatar */}
         <AutoLayout direction="horizontal" spacing={16} verticalAlignItems="center">
           <Face></Face>
         </AutoLayout>
