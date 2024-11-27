@@ -193,6 +193,11 @@ async def get_persona():
         
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
+    
+
+@app.get("/userstory/")
+async def get_user_story():
+    return "Jackson is awesome and loves all these products"
 
 
 # Root route
