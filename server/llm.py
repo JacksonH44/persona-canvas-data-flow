@@ -199,7 +199,7 @@ class LLM:
       # Overview
       You are an expert in UX design and user studies. As input you will
       receive a User Persona and a product description. Output a specific
-      user story from the point of view of the user persona.
+      user story in first person point of view of the user persona.
       # Chain of Thought
       Who am I? (who)
       What do I want from this product? (what)
@@ -239,11 +239,18 @@ class LLM:
     self.history.append(sys_msg)
     self.history.append(product_msg)
 
-    chat = self.client.chat.completions.create(
-      messages=self.history,
-      model="llama-3.1-70b-versatile",
-      response_format={ "type": "json_object" }
-    )
-    completion = chat.choices[0].message.content
+    stories = []
+    stories_history = []
+
+    for _ in range(4):
+      chat = self.client.chat.completions.create(
+        messages=self.history,
+        model="llama-3.1-70b-versatile",
+        response_format={ "type": "json_object" }
+      )
+      completion = json.loads(chat.choices[0].message.content)
+      stories_history.append({ "role": "assistant", "content": str(completion) })
+      stories.append(completion["story"])
     
-    print(completion)
+    self.history.append(stories_history[0])
+    return stories

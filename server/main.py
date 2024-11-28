@@ -227,8 +227,8 @@ async def get_user_story(product: Product):
         "active": persona["active"]
     }
 
-    llm.generate_user_stories(data, product.description)
-    return "Jackson is awesome and loves all these products"
+    stories = llm.generate_user_stories(data, product.description)
+    return stories
 
 
 # Root route
