@@ -42,6 +42,9 @@ class Persona(BaseModel):
     frustrations: str
     story: str
 
+class Product(BaseModel):
+    description: str
+
 # Helper function to determine which fields of a persona to update
 def extract_fields_updated_from_source(persona):
     updated_fields = []
@@ -129,6 +132,15 @@ async def make_personas_inactive(id: str = None):
             persona["active"] = False
             client.collection("persona").update(persona["id"], persona)
 
+async def get_active_persona():
+    """Get the currently active persona"""
+    personas = await get_all_personas()
+    for persona in personas:
+        if persona["active"]:
+            return persona
+        
+    raise ValueError("No active persona found.")
+
 
 # Endpoint to receive POST request from Figma plugin
 @app.post("/sticky/")
@@ -195,8 +207,27 @@ async def get_persona():
         raise HTTPException(status_code=500, detail=f"Error fetching stickies: {e}")
     
 
-@app.get("/userstory/")
-async def get_user_story():
+@app.post("/userstory/")
+async def get_user_story(product: Product):
+    persona = await get_active_persona()
+
+    # Construct the data payload
+    data = {
+        "type": persona["type"],
+        "name": persona["name"],
+        "age": persona["age"],
+        "location": persona["location"],
+        "occupation": persona["occupation"],
+        "status": persona["status"],
+        "education": persona["education"],
+        "motivation": persona["motivation"],
+        "frustration": persona["frustration"],
+        "goal": persona["goal"],
+        "story": persona["story"],
+        "active": persona["active"]
+    }
+
+    llm.generate_user_stories(data, product.description)
     return "Jackson is awesome and loves all these products"
 
 

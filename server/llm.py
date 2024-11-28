@@ -11,7 +11,7 @@ class LLM:
     load_dotenv()
 
     self.client = Groq(
-        api_key=os.environ.get("GROQ_API_KEY"),
+        api_key=os.environ.get("GROQ_API_KEY")
     )
 
   def find_updated_fields(self, persona_detail):
@@ -96,7 +96,7 @@ class LLM:
   
   def update_persona_from_widget(self, persona):
     # Find which fields in the bios section and blocks section need to be updated
-    updated_bios, updated_blocks = self.find_updated_fields(persona["detail"])
+    updated_bios, _ = self.find_updated_fields(persona["detail"])
 
     # Update other bio fields
     bio_update_system_message = {
@@ -191,3 +191,59 @@ class LLM:
     final_completion = final_chat.choices[0].message.content
     self.history.append({ "role": "assistant", "content": final_completion })
     return json.loads(final_completion)
+  
+  def generate_user_stories(self, persona, product_description):
+    sys_msg = {
+      "role": "system",
+      "content": """
+      # Overview
+      You are an expert in UX design and user studies. As input you will
+      receive a User Persona and a product description. Output a specific
+      user story from the point of view of the user persona.
+      # Chain of Thought
+      Who am I? (who)
+      What do I want from this product? (what)
+      Why do I want this from this product? (why)
+      # User Persona Input Format
+      {
+        type: "Primary" | "Secondary" | "Served" | "Anti",
+        name: string,
+        age: number,
+        location: string
+        occupation: string
+        status: "Married" | "Single",
+        education: "High School" | "Bachelors" | "Masters" | "PhD",
+        motivations: 2 or 3 sentence string,
+        goals: 2 or 3 sentence string,
+        frustrations: 2 or 3 sentence string,
+        story: 2 or 3 sentence string
+      }
+      # Product description input format
+      2 or 3 sentence string
+      # Output Format
+      You should generate a response in JSON format as follows:
+      { 
+        who: string
+        what: string
+        why: string
+        story: 1 to 2 sentence string
+      }
+      """
+    }
+    user_content = "# User Persona:\n" + str(persona) + \
+      "\n# Product Description\n" + product_description
+    product_msg = {
+      "role": "user",
+      "content": user_content
+    }
+    self.history.append(sys_msg)
+    self.history.append(product_msg)
+
+    chat = self.client.chat.completions.create(
+      messages=self.history,
+      model="llama-3.1-70b-versatile",
+      response_format={ "type": "json_object" }
+    )
+    completion = chat.choices[0].message.content
+    
+    print(completion)

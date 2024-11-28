@@ -10,12 +10,22 @@ function Widget() {
   const [productDesc, setProductDesc] = useSyncedState<string>("product", "")
 
   async function fetchStoryData() {
-    try {
-      const response = await fetch("http://localhost:8000/userstory/")
-      const contents = [await response.json()]
-      setStoryData(contents)
-    } catch (error) {
-      console.error("Error fetching user stories:", error)
+    if (productDesc != "") {
+      try {
+        const response = await fetch("http://localhost:8000/userstory/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({description: productDesc})
+        })
+        const contents = [await response.json()]
+        setStoryData(contents)
+      } catch (error) {
+        console.error("Error fetching user stories:", error)
+      }
+    } else {
+      console.log("Please enter a product description")
     }
   }
 
@@ -23,6 +33,7 @@ function Widget() {
     <AutoLayout
       direction="vertical"
       height="hug-contents"
+      width="hug-contents"
       padding={8}
       fill="#FFFFFF"
       cornerRadius={8}
@@ -34,7 +45,7 @@ function Widget() {
         horizontalAlignItems="start" 
         verticalAlignItems="start" 
         spacing={8}
-        width="hug-contents"
+        width="fill-parent"
         stroke="#FFFFFF"
         strokeWidth={1}
       >
@@ -44,8 +55,8 @@ function Widget() {
         <AutoLayout
           stroke="#000000"
           strokeWidth={1}
-          width={300}
-          height={80}
+          width="fill-parent"
+          height={200}
           padding={8}
         >
           <Input
