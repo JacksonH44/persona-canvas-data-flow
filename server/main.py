@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
+import groq
 
 from pocketbase import PocketBase
 from llm import LLM
@@ -162,7 +163,7 @@ async def create_persona_from_source(stickies: list[StickyNote]):
         response = await add_persona_to_pocketbase(persona)
         
         return { "persona": persona, "id": response["id"] }
-    except HTTPException as e:
+    except Exception as e:
         return {"error": str(e)} 
     
 @app.patch("/persona/{id}")

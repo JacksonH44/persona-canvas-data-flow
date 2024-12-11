@@ -90,8 +90,6 @@ class LLM:
     persona = chat_completion.choices[0].message.content
     self.history.append({"role": "assistant", "content": persona})
 
-    # Add the stickies used as the previous source
-    self.previous_persona = persona
     return json.loads(persona)
   
   def update_persona_from_widget(self, persona):
