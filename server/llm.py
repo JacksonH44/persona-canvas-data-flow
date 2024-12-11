@@ -196,8 +196,10 @@ class LLM:
       "content": """
       # Overview
       You are an expert in UX design and user studies. As input you will
-      receive a User Persona and a product description. Output a specific
-      user story in first person point of view of the user persona.
+      receive a User Persona and a product description. Output a 3-5 specific
+      user stories in first person point of view of the user persona and introduce
+      who the persona is. Each user story should be orthogonal to each other. 
+      Each user story should be 1 to 2 sentences.
       # Chain of Thought
       Who am I? (who)
       What do I want from this product? (what)
@@ -220,11 +222,11 @@ class LLM:
       2 or 3 sentence string
       # Output Format
       You should generate a response in JSON format as follows:
-      { 
-        who: string
-        what: string
-        why: string
-        story: 1 to 2 sentence string
+      {
+        user: string (persona name),
+        stories: [
+          3 to 5 strings
+        ]    
       }
       """
     }
@@ -236,19 +238,13 @@ class LLM:
     }
     self.history.append(sys_msg)
     self.history.append(product_msg)
-
-    stories = []
-    stories_history = []
-
-    for _ in range(4):
-      chat = self.client.chat.completions.create(
-        messages=self.history,
-        model="llama-3.1-70b-versatile",
-        response_format={ "type": "json_object" }
-      )
-      completion = json.loads(chat.choices[0].message.content)
-      stories_history.append({ "role": "assistant", "content": str(completion) })
-      stories.append(completion["story"])
     
-    self.history.append(stories_history[0])
-    return stories
+    chat = self.client.chat.completions.create(
+      messages=self.history,
+      model="llama-3.1-70b-versatile",
+      response_format={ "type": "json_object" }
+    )
+    completion = json.loads(chat.choices[0].message.content)
+    self.history.append({ "role": "assistant", "content": str(completion) })
+    
+    return completion
